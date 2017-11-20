@@ -20,7 +20,7 @@
 		9F80DC771FC3100300292295 /* Countly_OpenUDID.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC571FC30FFF00292295 /* Countly_OpenUDID.m */; };
 		9F80DC781FC3100300292295 /* CountlyUserDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC581FC30FFF00292295 /* CountlyUserDetails.h */; };
 		9F80DC791FC3100300292295 /* CountlyStarRating.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC591FC30FFF00292295 /* CountlyStarRating.m */; };
-		9F80DC7A1FC3100300292295 /* Countly.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5A1FC30FFF00292295 /* Countly.h */; };
+		9F80DC7A1FC3100300292295 /* Countly.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5A1FC30FFF00292295 /* Countly.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9F80DC7B1FC3100300292295 /* CountlyCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5B1FC30FFF00292295 /* CountlyCommon.h */; };
 		9F80DC7C1FC3100300292295 /* CountlyAPMNetworkLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC5C1FC3100000292295 /* CountlyAPMNetworkLog.m */; };
 		9F80DC7D1FC3100300292295 /* CountlyNotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC5D1FC3100000292295 /* CountlyNotificationService.m */; };
