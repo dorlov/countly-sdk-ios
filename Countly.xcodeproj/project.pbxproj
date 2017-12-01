@@ -18,9 +18,9 @@
 		9F80DC751FC3100300292295 /* CountlyPersistency.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC551FC30FFF00292295 /* CountlyPersistency.m */; };
 		9F80DC761FC3100300292295 /* CountlyUserDetails.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC561FC30FFF00292295 /* CountlyUserDetails.m */; };
 		9F80DC771FC3100300292295 /* Countly_OpenUDID.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC571FC30FFF00292295 /* Countly_OpenUDID.m */; };
-		9F80DC781FC3100300292295 /* CountlyUserDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC581FC30FFF00292295 /* CountlyUserDetails.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9F80DC781FC3100300292295 /* CountlyUserDetails.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC581FC30FFF00292295 /* CountlyUserDetails.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9F80DC791FC3100300292295 /* CountlyStarRating.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC591FC30FFF00292295 /* CountlyStarRating.m */; };
-		9F80DC7A1FC3100300292295 /* Countly.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5A1FC30FFF00292295 /* Countly.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9F80DC7A1FC3100300292295 /* Countly.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5A1FC30FFF00292295 /* Countly.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9F80DC7B1FC3100300292295 /* CountlyCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC5B1FC30FFF00292295 /* CountlyCommon.h */; };
 		9F80DC7C1FC3100300292295 /* CountlyAPMNetworkLog.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC5C1FC3100000292295 /* CountlyAPMNetworkLog.m */; };
 		9F80DC7D1FC3100300292295 /* CountlyNotificationService.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC5D1FC3100000292295 /* CountlyNotificationService.m */; };
@@ -30,7 +30,7 @@
 		9F80DC811FC3100300292295 /* CountlyPersistency.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC611FC3100000292295 /* CountlyPersistency.h */; };
 		9F80DC821FC3100300292295 /* CountlyPushNotifications.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC621FC3100000292295 /* CountlyPushNotifications.h */; };
 		9F80DC831FC3100300292295 /* CountlyEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC631FC3100000292295 /* CountlyEvent.h */; };
-		9F80DC841FC3100300292295 /* CountlyConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC641FC3100100292295 /* CountlyConfig.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		9F80DC841FC3100300292295 /* CountlyConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC641FC3100100292295 /* CountlyConfig.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9F80DC851FC3100300292295 /* CountlyPushNotifications.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC651FC3100100292295 /* CountlyPushNotifications.m */; };
 		9F80DC861FC3100300292295 /* CountlyViewTracking.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC661FC3100100292295 /* CountlyViewTracking.h */; };
 		9F80DC871FC3100300292295 /* CountlyViewTracking.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC671FC3100100292295 /* CountlyViewTracking.m */; };
@@ -314,7 +314,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -366,7 +366,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

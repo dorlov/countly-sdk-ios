@@ -15,6 +15,12 @@ FOUNDATION_EXPORT double CountlyVersionNumber;
 FOUNDATION_EXPORT const unsigned char CountlyVersionString[];
 
 // In this header, you should import all the public headers of your framework using statements like #import <Countly/PublicHeader.h>
-#import "Countly.h"
+#import "Countly/Countly.h"
+#import "Countly/CountlyAPM.h"
+#import "Countly/CountlyAPMNetworkLog.h"
+#import "Countly/CountlyCommon.h"
+#import "Countly/CountlyConfig.h"
+#import "Countly/CountlyConnectionManager.h"
+#import "Countly/CountlyUserDetails.h"
 
 
