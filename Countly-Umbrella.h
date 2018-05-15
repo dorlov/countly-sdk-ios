@@ -22,7 +22,3 @@ FOUNDATION_EXPORT const unsigned char CountlyVersionString[];
 #import "Countly/CountlyConfig.h"
 #import "Countly/CountlyConnectionManager.h"
 #import "Countly/CountlyUserDetails.h"
-#import "CountlyConsentManager.h"
-#import "CountlyLocationManager.h"
-
-
