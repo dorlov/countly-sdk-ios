@@ -19,16 +19,22 @@
 
 NSString* const kCountlyZeroIDFA = @"00000000-0000-0000-0000-000000000000";
 
-NSString* const kCountlyMetricKeyDevice =            @"_device";
-NSString* const kCountlyMetricKeyOS =                @"_os";
-NSString* const kCountlyMetricKeyOSVersion =         @"_os_version";
-NSString* const kCountlyMetricKeyAppVersion =        @"_app_version";
-NSString* const kCountlyMetricKeyCarrier =           @"_carrier";
-NSString* const kCountlyMetricKeyResolution =        @"_resolution";
-NSString* const kCountlyMetricKeyDensity =           @"_density";
-NSString* const kCountlyMetricKeyLocale =            @"_locale";
-NSString* const kCountlyMetricKeyHasWatch =          @"_has_watch";
-NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
+NSString* const kCountlyMetricKeyDevice             = @"_device";
+NSString* const kCountlyMetricKeyOS                 = @"_os";
+NSString* const kCountlyMetricKeyOSVersion          = @"_os_version";
+NSString* const kCountlyMetricKeyAppVersion         = @"_app_version";
+NSString* const kCountlyMetricKeyCarrier            = @"_carrier";
+NSString* const kCountlyMetricKeyResolution         = @"_resolution";
+NSString* const kCountlyMetricKeyDensity            = @"_density";
+NSString* const kCountlyMetricKeyLocale             = @"_locale";
+NSString* const kCountlyMetricKeyHasWatch           = @"_has_watch";
+NSString* const kCountlyMetricKeyInstalledWatchApp  = @"_installed_watch_app";
+
+#if TARGET_OS_IOS
+@interface CountlyDeviceInfo ()
+@property (nonatomic) CTTelephonyNetworkInfo* networkInfo;
+@end
+#endif
 
 @implementation CountlyDeviceInfo
 
@@ -46,9 +52,11 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
     {
         self.deviceID = [CountlyPersistency.sharedInstance retrieveStoredDeviceID];
 #if TARGET_OS_IOS
-        //NOTE: For Limit Ad Tracking zero-IDFA problem
+        //NOTE: Handle Limit Ad Tracking zero-IDFA problem
         if ([self.deviceID isEqualToString:kCountlyZeroIDFA])
             [self initializeDeviceID:CLYIDFV];
+
+        self.networkInfo = CTTelephonyNetworkInfo.new;
 #endif
     }
 
@@ -103,8 +111,12 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
 - (NSString *)zeroSafeIDFA
 {
 #if TARGET_OS_IOS
+#ifndef COUNTLY_EXCLUDE_IDFA
     NSString* IDFA = ASIdentifierManager.sharedManager.advertisingIdentifier.UUIDString;
-    //NOTE: For Limit Ad Tracking zero-IDFA problem
+#else
+    NSString* IDFA = UIDevice.currentDevice.identifierForVendor.UUIDString;
+#endif
+    //NOTE: Handle Limit Ad Tracking zero-IDFA problem
     if ([IDFA isEqualToString:kCountlyZeroIDFA])
         IDFA = UIDevice.currentDevice.identifierForVendor.UUIDString;
 
@@ -188,7 +200,7 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
 + (NSString *)carrier
 {
 #if TARGET_OS_IOS
-    return CTTelephonyNetworkInfo.new.subscriberCellularProvider.carrierName;
+    return CountlyDeviceInfo.sharedInstance.networkInfo.subscriberCellularProvider.carrierName;
 #endif
     return nil;
 }
@@ -243,12 +255,18 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
 #if TARGET_OS_IOS
 + (NSInteger)hasWatch
 {
-    return (int)WCSession.defaultSession.paired;
+    if (@available(iOS 9.0, *))
+        return (NSInteger)WCSession.defaultSession.paired;
+
+    return 0;
 }
 
 + (NSInteger)installedWatchApp
 {
-    return (int)WCSession.defaultSession.watchAppInstalled;
+    if (@available(iOS 9.0, *))
+        return (NSInteger)WCSession.defaultSession.watchAppInstalled;
+
+    return 0;
 }
 #endif
 
@@ -271,8 +289,11 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
 #if TARGET_OS_IOS
     if (CountlyCommon.sharedInstance.enableAppleWatch)
     {
-        metricsDictionary[kCountlyMetricKeyHasWatch] = @(CountlyDeviceInfo.hasWatch);
-        metricsDictionary[kCountlyMetricKeyInstalledWatchApp] = @(CountlyDeviceInfo.installedWatchApp);
+        if (CountlyConsentManager.sharedInstance.consentForAppleWatch)
+        {
+            metricsDictionary[kCountlyMetricKeyHasWatch] = @(CountlyDeviceInfo.hasWatch);
+            metricsDictionary[kCountlyMetricKeyInstalledWatchApp] = @(CountlyDeviceInfo.installedWatchApp);
+        }
     }
 #endif
 
@@ -312,24 +333,24 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
                         connType = CLYConnectionCellNetwork;
 
 #if TARGET_OS_IOS
-                        CTTelephonyNetworkInfo *tni = CTTelephonyNetworkInfo.new;
                         NSDictionary* connectionTypes =
                         @{
-                            CTRadioAccessTechnologyGPRS:@(CLYConnectionCellNetwork2G),
-                            CTRadioAccessTechnologyEdge:@(CLYConnectionCellNetwork2G),
-                            CTRadioAccessTechnologyCDMA1x:@(CLYConnectionCellNetwork2G),
-                            CTRadioAccessTechnologyWCDMA:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyHSDPA:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyHSUPA:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyCDMAEVDORev0:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyCDMAEVDORevA:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyCDMAEVDORevB:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyeHRPD:@(CLYConnectionCellNetwork3G),
-                            CTRadioAccessTechnologyLTE:@(CLYConnectionCellNetworkLTE)
+                            CTRadioAccessTechnologyGPRS: @(CLYConnectionCellNetwork2G),
+                            CTRadioAccessTechnologyEdge: @(CLYConnectionCellNetwork2G),
+                            CTRadioAccessTechnologyCDMA1x: @(CLYConnectionCellNetwork2G),
+                            CTRadioAccessTechnologyWCDMA: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyHSDPA: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyHSUPA: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyCDMAEVDORev0: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyCDMAEVDORevA: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyCDMAEVDORevB: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyeHRPD: @(CLYConnectionCellNetwork3G),
+                            CTRadioAccessTechnologyLTE: @(CLYConnectionCellNetworkLTE)
                         };
 
-                        if (connectionTypes[tni.currentRadioAccessTechnology])
-                            connType = [connectionTypes[tni.currentRadioAccessTechnology] integerValue];
+                        NSString* radioAccessTech = CountlyDeviceInfo.sharedInstance.networkInfo.currentRadioAccessTechnology;
+                        if (connectionTypes[radioAccessTech])
+                            connType = [connectionTypes[radioAccessTech] integerValue];
 #endif
                     }
                     else if ([[NSString stringWithUTF8String:i->ifa_name] isEqualToString:@"en0"])
@@ -401,22 +422,22 @@ NSString* const kCountlyMetricKeyInstalledWatchApp = @"_installed_watch_app";
 }
 
 
-+ (float)OpenGLESversion
++ (NSString *)OpenGLESversion
 {
 #if TARGET_OS_IOS
     EAGLContext *aContext;
 
     aContext = [EAGLContext.alloc initWithAPI:kEAGLRenderingAPIOpenGLES3];
     if (aContext)
-        return 3.0;
+        return @"3.0";
 
     aContext = [EAGLContext.alloc initWithAPI:kEAGLRenderingAPIOpenGLES2];
     if (aContext)
-        return 2.0;
+        return @"2.0";
 
-    return 1.0;
+    return @"1.0";
 #else
-    return 1.0;
+    return @"1.0";
 #endif
 }
 

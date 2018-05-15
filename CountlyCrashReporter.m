@@ -10,37 +10,37 @@
 
 NSString* const kCountlyExceptionUserInfoBacktraceKey = @"kCountlyExceptionUserInfoBacktraceKey";
 
-NSString* const kCountlyCRKeyBinaryImages =     @"_binary_images";
-NSString* const kCountlyCRKeyOS =               @"_os";
-NSString* const kCountlyCRKeyOSVersion =        @"_os_version";
-NSString* const kCountlyCRKeyDevice =           @"_device";
-NSString* const kCountlyCRKeyArchitecture =     @"_architecture";
-NSString* const kCountlyCRKeyResolution =       @"_resolution";
-NSString* const kCountlyCRKeyAppVersion =       @"_app_version";
-NSString* const kCountlyCRKeyAppBuild =         @"_app_build";
-NSString* const kCountlyCRKeyBuildUUID =        @"_build_uuid";
-NSString* const kCountlyCRKeyLoadAddress =      @"_load_address";
-NSString* const kCountlyCRKeyExecutableName =   @"_executable_name";
-NSString* const kCountlyCRKeyName =             @"_name";
-NSString* const kCountlyCRKeyType =             @"_type";
-NSString* const kCountlyCRKeyError =            @"_error";
-NSString* const kCountlyCRKeyNonfatal =         @"_nonfatal";
-NSString* const kCountlyCRKeyRAMCurrent =       @"_ram_current";
-NSString* const kCountlyCRKeyRAMTotal =         @"_ram_total";
-NSString* const kCountlyCRKeyDiskCurrent =      @"_disk_current";
-NSString* const kCountlyCRKeyDiskTotal =        @"_disk_total";
-NSString* const kCountlyCRKeyBattery =          @"_bat";
-NSString* const kCountlyCRKeyOrientation =      @"_orientation";
-NSString* const kCountlyCRKeyOnline =           @"_online";
-NSString* const kCountlyCRKeyOpenGL =           @"_opengl";
-NSString* const kCountlyCRKeyRoot =             @"_root";
-NSString* const kCountlyCRKeyBackground =       @"_background";
-NSString* const kCountlyCRKeyRun =              @"_run";
-NSString* const kCountlyCRKeyCustom =           @"_custom";
-NSString* const kCountlyCRKeyLogs =             @"_logs";
-NSString* const kCountlyCRKeySignalCode =       @"signal_code";
-NSString* const kCountlyCRKeyImageLoadAddress = @"la";
-NSString* const kCountlyCRKeyImageBuildUUID =   @"id";
+NSString* const kCountlyCRKeyBinaryImages      = @"_binary_images";
+NSString* const kCountlyCRKeyOS                = @"_os";
+NSString* const kCountlyCRKeyOSVersion         = @"_os_version";
+NSString* const kCountlyCRKeyDevice            = @"_device";
+NSString* const kCountlyCRKeyArchitecture      = @"_architecture";
+NSString* const kCountlyCRKeyResolution        = @"_resolution";
+NSString* const kCountlyCRKeyAppVersion        = @"_app_version";
+NSString* const kCountlyCRKeyAppBuild          = @"_app_build";
+NSString* const kCountlyCRKeyBuildUUID         = @"_build_uuid";
+NSString* const kCountlyCRKeyLoadAddress       = @"_load_address";
+NSString* const kCountlyCRKeyExecutableName    = @"_executable_name";
+NSString* const kCountlyCRKeyName              = @"_name";
+NSString* const kCountlyCRKeyType              = @"_type";
+NSString* const kCountlyCRKeyError             = @"_error";
+NSString* const kCountlyCRKeyNonfatal          = @"_nonfatal";
+NSString* const kCountlyCRKeyRAMCurrent        = @"_ram_current";
+NSString* const kCountlyCRKeyRAMTotal          = @"_ram_total";
+NSString* const kCountlyCRKeyDiskCurrent       = @"_disk_current";
+NSString* const kCountlyCRKeyDiskTotal         = @"_disk_total";
+NSString* const kCountlyCRKeyBattery           = @"_bat";
+NSString* const kCountlyCRKeyOrientation       = @"_orientation";
+NSString* const kCountlyCRKeyOnline            = @"_online";
+NSString* const kCountlyCRKeyOpenGL            = @"_opengl";
+NSString* const kCountlyCRKeyRoot              = @"_root";
+NSString* const kCountlyCRKeyBackground        = @"_background";
+NSString* const kCountlyCRKeyRun               = @"_run";
+NSString* const kCountlyCRKeyCustom            = @"_custom";
+NSString* const kCountlyCRKeyLogs              = @"_logs";
+NSString* const kCountlyCRKeySignalCode        = @"signal_code";
+NSString* const kCountlyCRKeyImageLoadAddress  = @"la";
+NSString* const kCountlyCRKeyImageBuildUUID    = @"id";
 
 @implementation CountlyCrashReporter
 
@@ -52,6 +52,9 @@ static NSString *executableName;
 
 + (instancetype)sharedInstance
 {
+    if (!CountlyCommon.sharedInstance.hasStarted)
+        return nil;
+
     static CountlyCrashReporter *s_sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{s_sharedInstance = self.new;});
@@ -70,6 +73,12 @@ static NSString *executableName;
 
 - (void)startCrashReporting
 {
+    if (!self.isEnabledOnInitialConfig)
+        return;
+
+    if (!CountlyConsentManager.sharedInstance.consentForCrashReporting)
+        return;
+
     NSSetUncaughtExceptionHandler(&CountlyUncaughtExceptionHandler);
     signal(SIGABRT, CountlySignalHandler);
     signal(SIGILL, CountlySignalHandler);
@@ -80,8 +89,30 @@ static NSString *executableName;
     signal(SIGTRAP, CountlySignalHandler);
 }
 
+
+- (void)stopCrashReporting
+{
+    if (!self.isEnabledOnInitialConfig)
+        return;
+
+    NSSetUncaughtExceptionHandler(NULL);
+    signal(SIGABRT, SIG_DFL);
+    signal(SIGILL, SIG_DFL);
+    signal(SIGSEGV, SIG_DFL);
+    signal(SIGFPE, SIG_DFL);
+    signal(SIGBUS, SIG_DFL);
+    signal(SIGPIPE, SIG_DFL);
+    signal(SIGTRAP, SIG_DFL);
+
+    customCrashLogs = nil;
+}
+
+
 - (void)recordHandledException:(NSException *)exception withStackTrace:(NSArray *)stackTrace
 {
+    if (!CountlyConsentManager.sharedInstance.consentForCrashReporting)
+        return;
+
     if (stackTrace)
     {
         NSMutableDictionary* userInfo = [NSMutableDictionary dictionaryWithDictionary:exception.userInfo];
@@ -124,7 +155,7 @@ void CountlyExceptionHandler(NSException *exception, bool nonfatal)
     crashReport[kCountlyCRKeyBattery] = @(CountlyDeviceInfo.batteryLevel);
     crashReport[kCountlyCRKeyOrientation] = CountlyDeviceInfo.orientation;
     crashReport[kCountlyCRKeyOnline] = @((CountlyDeviceInfo.connectionType) ? 1 : 0 );
-    crashReport[kCountlyCRKeyOpenGL] = @(CountlyDeviceInfo.OpenGLESversion);
+    crashReport[kCountlyCRKeyOpenGL] = CountlyDeviceInfo.OpenGLESversion;
     crashReport[kCountlyCRKeyRoot] = @(CountlyDeviceInfo.isJailbroken);
     crashReport[kCountlyCRKeyBackground] = @(CountlyDeviceInfo.isInBackground);
     crashReport[kCountlyCRKeyRun] = @(CountlyCommon.sharedInstance.timeSinceLaunch);
@@ -145,14 +176,7 @@ void CountlyExceptionHandler(NSException *exception, bool nonfatal)
 
     [CountlyConnectionManager.sharedInstance sendCrashReport:[crashReport cly_JSONify] immediately:YES];
 
-    NSSetUncaughtExceptionHandler(NULL);
-    signal(SIGABRT, SIG_DFL);
-    signal(SIGILL, SIG_DFL);
-    signal(SIGSEGV, SIG_DFL);
-    signal(SIGFPE, SIG_DFL);
-    signal(SIGBUS, SIG_DFL);
-    signal(SIGPIPE, SIG_DFL);
-    signal(SIGTRAP, SIG_DFL);
+    [CountlyCrashReporter.sharedInstance stopCrashReporting];
 }
 
 void CountlySignalHandler(int signalCode)
@@ -177,9 +201,12 @@ void CountlySignalHandler(int signalCode)
 
 - (void)log:(NSString *)log
 {
+    if (!CountlyConsentManager.sharedInstance.consentForCrashReporting)
+        return;
+
     static NSDateFormatter* df = nil;
 
-    if ( customCrashLogs == nil )
+    if (!customCrashLogs)
     {
         customCrashLogs = NSMutableArray.new;
         df = NSDateFormatter.new;
@@ -207,7 +234,7 @@ void CountlySignalHandler(int signalCode)
     uint32_t imageCount = _dyld_image_count();
     for (uint32_t i = 0; i < imageCount; i++)
     {
-        const char *imageNameChar = _dyld_get_image_name(i);
+        const char* imageNameChar = _dyld_get_image_name(i);
         if (imageNameChar == NULL)
         {
             COUNTLY_LOG(@"Image Name can not be retrieved!");
@@ -223,7 +250,7 @@ void CountlySignalHandler(int signalCode)
         }
 
 
-        const struct mach_header *imageHeader = _dyld_get_image_header(i);
+        const struct mach_header* imageHeader = _dyld_get_image_header(i);
         if (imageHeader == NULL)
         {
             COUNTLY_LOG(@"Image Header can not be retrieved!");
@@ -236,11 +263,11 @@ void CountlySignalHandler(int signalCode)
 
         for (uint32_t j = 0; j < imageHeader->ncmds; j++)
         {
-            const struct segment_command_64 *segCmd = (struct segment_command_64 *)ptr;
+            const struct segment_command_64* segCmd = (struct segment_command_64*)ptr;
 
             if (segCmd->cmd == LC_UUID)
             {
-                const uint8_t *uuid = ((const struct uuid_command *)segCmd)->uuid;
+                const uint8_t* uuid = ((const struct uuid_command*)segCmd)->uuid;
                 imageUUID = [NSUUID.alloc initWithUUIDBytes:uuid].UUIDString;
                 break;
             }
@@ -253,7 +280,7 @@ void CountlySignalHandler(int signalCode)
             continue;
         }
 
-        //NOTE: Server needs app's own build uuid directly in crash report object, for fast lookup
+        //NOTE: Include app's own build UUID directly in crash report object, as Countly Server needs it for fast lookup
         if (imageHeader->filetype == MH_EXECUTE)
         {
             buildUUID = imageUUID;
