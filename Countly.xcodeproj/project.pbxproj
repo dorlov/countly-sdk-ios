@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		9F3378C920AAF93F00E24A87 /* CountlyLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3378C520AAF93F00E24A87 /* CountlyLocationManager.m */; };
-		9F3378CA20AAF93F00E24A87 /* CountlyConsentManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F3378C620AAF93F00E24A87 /* CountlyConsentManager.h */; };
+		9F3378CA20AAF93F00E24A87 /* CountlyConsentManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F3378C620AAF93F00E24A87 /* CountlyConsentManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9F3378CB20AAF93F00E24A87 /* CountlyConsentManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F3378C720AAF93F00E24A87 /* CountlyConsentManager.m */; };
-		9F3378CC20AAF93F00E24A87 /* CountlyLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F3378C820AAF93F00E24A87 /* CountlyLocationManager.h */; };
+		9F3378CC20AAF93F00E24A87 /* CountlyLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F3378C820AAF93F00E24A87 /* CountlyLocationManager.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		9F80DC6D1FC3100300292295 /* CountlyConnectionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC4D1FC30FFE00292295 /* CountlyConnectionManager.m */; };
 		9F80DC6E1FC3100300292295 /* CountlyStarRating.h in Headers */ = {isa = PBXBuildFile; fileRef = 9F80DC4E1FC30FFE00292295 /* CountlyStarRating.h */; };
 		9F80DC6F1FC3100300292295 /* CountlyEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F80DC4F1FC30FFE00292295 /* CountlyEvent.m */; };
