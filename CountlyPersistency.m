@@ -6,16 +6,15 @@
 
 #import "CountlyCommon.h"
 
-@interface CountlyPersistency()
-@property (nonatomic, strong) NSMutableArray* queuedRequests;
-@property (nonatomic, strong) NSMutableArray* recordedEvents;
-@property (nonatomic, strong) NSMutableDictionary* startedEvents;
+@interface CountlyPersistency ()
+@property (nonatomic) NSMutableArray* queuedRequests;
+@property (nonatomic) NSMutableArray* recordedEvents;
+@property (nonatomic) NSMutableDictionary* startedEvents;
 @end
 
 @implementation CountlyPersistency
 NSString* const kCountlyQueuedRequestsPersistencyKey = @"kCountlyQueuedRequestsPersistencyKey";
 NSString* const kCountlyStartedEventsPersistencyKey = @"kCountlyStartedEventsPersistencyKey";
-NSString* const kCountlyTVOSNSUDKey = @"kCountlyTVOSNSUDKey";
 NSString* const kCountlyStoredDeviceIDKey = @"kCountlyStoredDeviceIDKey";
 NSString* const kCountlyWatchParentDeviceIDKey = @"kCountlyWatchParentDeviceIDKey";
 NSString* const kCountlyStarRatingStatusKey = @"kCountlyStarRatingStatusKey";
@@ -23,6 +22,9 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
 
 + (instancetype)sharedInstance
 {
+    if (!CountlyCommon.sharedInstance.hasStarted)
+        return nil;
+
     static CountlyPersistency* s_sharedInstance = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{s_sharedInstance = self.new;});
@@ -31,14 +33,10 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
 
 - (instancetype)init
 {
-    self = [super init];
-    if (self)
+    if (self = [super init])
     {
-#if TARGET_OS_TV
-        NSData* readData = [NSUserDefaults.standardUserDefaults objectForKey:kCountlyTVOSNSUDKey];
-#else
         NSData* readData = [NSData dataWithContentsOfURL:[self storageFileURL]];
-#endif
+
         if (readData)
         {
             NSDictionary* readDict = [NSKeyedUnarchiver unarchiveObjectWithData:readData];
@@ -67,9 +65,7 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
         [self.queuedRequests addObject:queryString];
 
         if (self.queuedRequests.count > self.storedRequestsLimit && !CountlyConnectionManager.sharedInstance.connection)
-        {
-            [self.queuedRequests removeObjectsInRange:(NSRange){0,1}];
-        }
+            [self.queuedRequests removeObjectAtIndex:0];
     }
 }
 
@@ -77,7 +73,8 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
 {
     @synchronized (self)
     {
-        [self.queuedRequests removeObject:queryString];
+        if (self.queuedRequests.count)
+            [self.queuedRequests removeObject:queryString inRange:(NSRange){0, 1}];
     }
 }
 
@@ -167,13 +164,19 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^
     {
-        url = [[NSFileManager.defaultManager URLsForDirectory:NSApplicationSupportDirectory inDomains:NSUserDomainMask] lastObject];
+#if TARGET_OS_TV
+        NSSearchPathDirectory directory = NSCachesDirectory;
+#else
+        NSSearchPathDirectory directory = NSApplicationSupportDirectory;
+#endif
+        url = [[NSFileManager.defaultManager URLsForDirectory:directory inDomains:NSUserDomainMask] lastObject];
+
 #if TARGET_OS_OSX
         url = [url URLByAppendingPathComponent:NSBundle.mainBundle.bundleIdentifier];
 #endif
         NSError *error = nil;
 
-        if (![NSFileManager.defaultManager fileExistsAtPath:url.absoluteString])
+        if (![NSFileManager.defaultManager fileExistsAtPath:url.path])
         {
             [NSFileManager.defaultManager createDirectoryAtURL:url withIntermediateDirectories:YES attributes:nil error:&error];
             if (error){ COUNTLY_LOG(@"Application Support directory can not be created: \n%@", error); }
@@ -199,14 +202,11 @@ NSString* const kCountlyNotificationPermissionKey = @"kCountlyNotificationPermis
 
     @synchronized (self)
     {
-        saveData = [NSKeyedArchiver archivedDataWithRootObject:@{kCountlyQueuedRequestsPersistencyKey:self.queuedRequests}];
+        saveData = [NSKeyedArchiver archivedDataWithRootObject:@{kCountlyQueuedRequestsPersistencyKey: self.queuedRequests}];
     }
-#if TARGET_OS_TV
-    [NSUserDefaults.standardUserDefaults setObject:saveData forKey:kCountlyTVOSNSUDKey];
-    [NSUserDefaults.standardUserDefaults synchronize];
-#else
+
     [saveData writeToFile:[self storageFileURL].path atomically:YES];
-#endif
+    [CountlyCommon.sharedInstance finishBackgroundTask];
 }
 
 #pragma mark ---
